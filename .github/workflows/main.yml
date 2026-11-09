@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Java
@@ -19,30 +19,36 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.x'
           channel: 'stable'
 
-      - name: Recreate Android structure safely
+      - name: Build Flutter Project from Scratch
         run: |
-          # حفظ الملفات الأساسية
-          cp pubspec.yaml pubspec_backup.yaml
-          cp android/app/src/main/AndroidManifest.xml manifest_backup.xml
-          
-          # تهيئة مجلد أندرويد
-          flutter create --platforms=android .
-          
-          # استعادة الملفات المضبوطة
-          mv pubspec_backup.yaml pubspec.yaml
-          mv manifest_backup.xml android/app/src/main/AndroidManifest.xml
+          # حفظ ملفاتك الخاصة
+          mkdir -p /tmp/my_source
+          cp -r lib /tmp/my_source/
+          cp pubspec.yaml /tmp/my_source/
+          cp android/app/src/main/AndroidManifest.xml /tmp/my_source/AndroidManifest.xml
 
-      - name: Install dependencies
-        run: flutter pub get
+          # إنشاء مشروع فلاتر كامل ونظيف
+          cd ..
+          flutter create --org com.local --project-name local_call app_build
+          cd app_build
 
-      - name: Build APK
-        run: flutter build apk --release
+          # استبدال الملفات بملفاتك الخاصة
+          cp -rf /tmp/my_source/lib/* lib/
+          cp -f /tmp/my_source/pubspec.yaml pubspec.yaml
+          cp -f /tmp/my_source/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+
+          # تنزيل الحزم والبناء
+          flutter pub get
+          flutter build apk --release
+
+          # نقل ملف الـ APK النهائي
+          mkdir -p $GITHUB_WORKSPACE/output
+          cp build/app/outputs/flutter-apk/app-release.apk $GITHUB_WORKSPACE/output/
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: LocalCall-Release-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: output/app-release.apk
