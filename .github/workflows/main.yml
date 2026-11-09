@@ -23,31 +23,31 @@ jobs:
 
       - name: Build Flutter Project
         run: |
-          # حفظ ملفاتك البرمجية
+          # 1. حفظ ملفات كودك
           mkdir -p /tmp/my_source
           cp -r lib /tmp/my_source/
           cp pubspec.yaml /tmp/my_source/
           cp android/app/src/main/AndroidManifest.xml /tmp/my_source/AndroidManifest.xml
 
-          # إنشاء بيئة فلاتر نظيفة
+          # 2. إنشاء مشروع نظيف
           cd ..
           flutter create --org com.local --project-name local_call app_build
           cd app_build
 
-          # استرجاع ملفاتك
+          # 3. استرجاع ملفاتك
           cp -rf /tmp/my_source/lib/* lib/
           cp -f /tmp/my_source/pubspec.yaml pubspec.yaml
           cp -f /tmp/my_source/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
 
-          # رفع minSdkVersion إلى 23 وتفعيل multiDex لحل مشكلة gradle
-          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/g' android/app/build.gradle
-          sed -i 's/minSdkVersion = flutter.minSdkVersion/minSdkVersion = 23/g' android/app/build.gradle || true
+          # 4. تعديل minSdkVersion إلى 23 تلقائياً سواء كان الملف gradle أو kts
+          find android/app -name "build.gradle*" -exec sed -i 's/minSdkVersion = flutter.minSdkVersion/minSdkVersion = 23/g' {} +
+          find android/app -name "build.gradle*" -exec sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/g' {} +
 
-          # تنزيل التبعيات وبناء التطبيق
+          # 5. تنزيل المكتبات وبناء الـ APK
           flutter pub get
           flutter build apk --release
 
-          # نقل ملف الـ APK لمجلد المخرجات
+          # 6. نقل ملف الـ APK لمجلد الإخراج
           mkdir -p $GITHUB_WORKSPACE/output
           cp build/app/outputs/flutter-apk/app-release.apk $GITHUB_WORKSPACE/output/
 
