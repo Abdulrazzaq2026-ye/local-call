@@ -1,23 +1,21 @@
 name: local_call
-description: "P2P Local Wi-Fi Calling App"
-publish_to: "none"
+description: "P2P Local Call Application"
+publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  shared_preferences: ^2.2.2
+  permission_handler: ^11.3.1
   network_info_plus: ^5.0.1
-  flutter_sound: ^9.2.13
-  permission_handler: ^11.3.0
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
