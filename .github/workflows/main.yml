@@ -21,29 +21,33 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Build Flutter Project from Scratch
+      - name: Build Flutter Project
         run: |
-          # حفظ ملفاتك الخاصة
+          # حفظ ملفاتك البرمجية
           mkdir -p /tmp/my_source
           cp -r lib /tmp/my_source/
           cp pubspec.yaml /tmp/my_source/
           cp android/app/src/main/AndroidManifest.xml /tmp/my_source/AndroidManifest.xml
 
-          # إنشاء مشروع فلاتر كامل ونظيف
+          # إنشاء بيئة فلاتر نظيفة
           cd ..
           flutter create --org com.local --project-name local_call app_build
           cd app_build
 
-          # استبدال الملفات بملفاتك الخاصة
+          # استرجاع ملفاتك
           cp -rf /tmp/my_source/lib/* lib/
           cp -f /tmp/my_source/pubspec.yaml pubspec.yaml
           cp -f /tmp/my_source/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
 
-          # تنزيل الحزم والبناء
+          # رفع minSdkVersion إلى 23 وتفعيل multiDex لحل مشكلة gradle
+          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/g' android/app/build.gradle
+          sed -i 's/minSdkVersion = flutter.minSdkVersion/minSdkVersion = 23/g' android/app/build.gradle || true
+
+          # تنزيل التبعيات وبناء التطبيق
           flutter pub get
           flutter build apk --release
 
-          # نقل ملف الـ APK النهائي
+          # نقل ملف الـ APK لمجلد المخرجات
           mkdir -p $GITHUB_WORKSPACE/output
           cp build/app/outputs/flutter-apk/app-release.apk $GITHUB_WORKSPACE/output/
 
