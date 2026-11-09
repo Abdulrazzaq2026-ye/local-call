@@ -16,38 +16,39 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Flutter
+      - name: Setup Flutter Stable
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.19.6'
           channel: 'stable'
 
       - name: Build Flutter Project
         run: |
-          # 1. حفظ ملفات كودك
+          # 1. حفظ ملفات المشروع
           mkdir -p /tmp/my_source
           cp -r lib /tmp/my_source/
           cp pubspec.yaml /tmp/my_source/
           cp android/app/src/main/AndroidManifest.xml /tmp/my_source/AndroidManifest.xml
 
-          # 2. إنشاء مشروع نظيف
+          # 2. إنشاء هيكل فلاتر رسمي متوافق
           cd ..
           flutter create --org com.local --project-name local_call app_build
           cd app_build
 
-          # 3. استرجاع ملفاتك
+          # 3. دمج ملفات كودك
           cp -rf /tmp/my_source/lib/* lib/
           cp -f /tmp/my_source/pubspec.yaml pubspec.yaml
           cp -f /tmp/my_source/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
 
-          # 4. تعديل minSdkVersion إلى 23 تلقائياً سواء كان الملف gradle أو kts
+          # 4. تعديل minSdkVersion وتفعيل multiDex
           find android/app -name "build.gradle*" -exec sed -i 's/minSdkVersion = flutter.minSdkVersion/minSdkVersion = 23/g' {} +
           find android/app -name "build.gradle*" -exec sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/g' {} +
 
-          # 5. تنزيل المكتبات وبناء الـ APK
+          # 5. تنزيل التبعيات وبناء الـ APK بتفاصيل واضحة
           flutter pub get
-          flutter build apk --release
+          flutter build apk --release --verbose
 
-          # 6. نقل ملف الـ APK لمجلد الإخراج
+          # 6. تجهيز المخرجات للتحميل
           mkdir -p $GITHUB_WORKSPACE/output
           cp build/app/outputs/flutter-apk/app-release.apk $GITHUB_WORKSPACE/output/
 
