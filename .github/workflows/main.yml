@@ -22,34 +22,34 @@ jobs:
           flutter-version: '3.22.2'
           channel: 'stable'
 
-      - name: Generate and Build
+      - name: Generate Clean Project and Compile
         run: |
-          # 1. نسخ ملفات الكود
-          mkdir -p /tmp/my_code
-          cp -r lib /tmp/my_code/
-          cp pubspec.yaml /tmp/my_code/
-
-          # 2. إنشاء بيئة فلاتر نظيفة
+          # 1. إنشاء تطبيق فلاتر جديد باسم ustexamscall
           cd ..
-          flutter create --org com.ust.localcall --project-name local_call fresh_project
+          flutter create --org com.ust.call --project-name ustexamscall fresh_project
           cd fresh_project
 
-          # 3. نقل كودك الخاص
-          cp -rf /tmp/my_code/lib/* lib/
-          cp -f /tmp/my_code/pubspec.yaml pubspec.yaml
+          # 2. حذف ملفات العرض التجريبية الافتراضية بالكامل لضمان الإقلاع على برنامجك
+          rm -rf lib/*
 
-          # 4. تنزيل الحزم
+          # 3. نسخ كود المشروع الحقيقي و pubspec
+          cp -f $GITHUB_WORKSPACE/lib/main.dart lib/main.dart
+          cp -f $GITHUB_WORKSPACE/lib/network_service.dart lib/network_service.dart
+          cp -f $GITHUB_WORKSPACE/pubspec.yaml pubspec.yaml
+
+          # 4. ضبط اسم التطبيق الظاهر في شاشة الهاتف الرئيسية
+          sed -i 's/android:label="ustexamscall"/android:label="Ustexamscall"/g' android/app/src/main/AndroidManifest.xml
+
+          # 5. تنزيل الحزم وتجميع الـ APK
           flutter pub get
-
-          # 5. بناء التطبيق وتجاوز مشاكل الأيقونات
           flutter build apk --release --no-tree-shake-icons
 
-          # 6. تجهيز المخرجات
+          # 6. تجهيز ملف التحميل النهائي
           mkdir -p $GITHUB_WORKSPACE/output
           cp build/app/outputs/flutter-apk/app-release.apk $GITHUB_WORKSPACE/output/
 
       - name: Deliver APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: UST-LocalCall-Release
+          name: Ustexamscall-Release
           path: output/app-release.apk
